@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
+        <variable type="com.example.app10x.data.remote.model.WeatherCurrentModel"
+            name="currentWeather"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

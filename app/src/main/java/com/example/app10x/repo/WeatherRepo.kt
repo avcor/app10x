@@ -2,38 +2,45 @@ package com.example.app10x.repo
 
 import android.util.Log
 import com.example.app10x.data.remote.ApiWeatherService
-import com.example.app10x.data.remote.WeatherServiceResponse
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.example.app10x.data.remote.model.WeatherCurrentModel
+import com.example.app10x.data.remote.model.WeatherForecastModel
+import com.example.app10x.data.remote.type.WeatherServiceResponse
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 val TAG = "abcd"
 
-class WeatherRepo @Inject constructor (
+class WeatherRepo @Inject constructor(
     private val apiWeatherService: ApiWeatherService
 ) {
-    private val _responseStateFlow = MutableStateFlow<WeatherServiceResponse>(WeatherServiceResponse.Loading)
-    val responseStateFlow: StateFlow<WeatherServiceResponse> = _responseStateFlow
+    private val coroutineExceptionHandler =
+        CoroutineExceptionHandler { coroutineContext, throwable ->
+            Log.e(TAG, "Exception in Weather Repo $throwable")
+        }
 
-    suspend fun getCurrentWeather() {
-        _responseStateFlow.emit(WeatherServiceResponse.Loading)
+    suspend fun getCurrentWeather() = flow<WeatherServiceResponse> {
+        emit(WeatherServiceResponse.Loading)
+
         try {
-            val r = apiWeatherService.getCurrentWeather(cityName = "Bengaluru")
-            if(r.isSuccessful){
-                r.body()?.let {
-                    _responseStateFlow.emit(WeatherServiceResponse.Success(it))
-                }?: run{
-                    _responseStateFlow.emit(WeatherServiceResponse.NoData)
-                    Log.d(TAG, "getCurrentWeather: ${r.body()}")
-                }
+            val weatherResponse = apiWeatherService.getCurrentWeather(cityName = "Bengaluru")
+            val forecastResponse = apiWeatherService.getForecastWeather(cityName = "Bengaluru")
+
+            if ((weatherResponse.isSuccessful && weatherResponse.body() != null) && (forecastResponse.isSuccessful && forecastResponse.body() != null)){
+                emit(WeatherServiceResponse.Success(weatherResponse.body(), forecastResponse.body()))
             }else{
-                _responseStateFlow.emit(WeatherServiceResponse.Failure)
-                Log.d(TAG, "getCurrentWeather: fail")
+                emit(WeatherServiceResponse.NoData)
             }
         }
         catch (e: Exception){
-            _responseStateFlow.emit(WeatherServiceResponse.Failure)
-            Log.e(TAG, "getCurrentWeather: Exception ${e}" )
+            emit(WeatherServiceResponse.Failure)
         }
-    }
+
+    }.flowOn(Dispatchers.IO + coroutineExceptionHandler)
+
 }

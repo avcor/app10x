@@ -1,6 +1,6 @@
 package com.example.app10x.data.remote.model
 
-data class WeatherResponse(
+data class WeatherCurrentModel(
     val coord: Coord,
     val weather: List<Weather>,
     val base: String,
