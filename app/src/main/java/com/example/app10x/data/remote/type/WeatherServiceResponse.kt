@@ -2,6 +2,7 @@ package com.example.app10x.data.remote.type
 
 import com.example.app10x.data.remote.model.WeatherForecastModel
 import com.example.app10x.data.remote.model.WeatherCurrentModel
+import java.util.Date
 
 sealed interface WeatherServiceResponse {
     data class Success(
@@ -12,3 +13,4 @@ sealed interface WeatherServiceResponse {
     data object Loading : WeatherServiceResponse
     data object NoData : WeatherServiceResponse
 }
+

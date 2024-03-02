@@ -18,11 +18,23 @@ class WeatherViewModel @Inject constructor(
     private val _currentWeatherState = MutableStateFlow<WeatherServiceResponse>(
         WeatherServiceResponse.Loading)
     val currentWeatherState: StateFlow<WeatherServiceResponse> = _currentWeatherState
+
+    private var _city = "Bengaluru"
+    val city = _city
+
     init {
+        getWeatherData()
+    }
+    fun getWeatherData(){
         viewModelScope.launch {
-            weatherRepo.getCurrentWeather().collect{
+            weatherRepo.getCurrentWeather(city = city).collect{
                 _currentWeatherState.value = it
             }
         }
     }
+
+    fun setCity(newCity: String){
+        _city = newCity
+    }
+
 }
