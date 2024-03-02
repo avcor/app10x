@@ -3,7 +3,6 @@ package com.example.app10x.ui.mainactivity
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -17,8 +16,6 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-val TAG = "abcd"
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -40,9 +37,17 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             weatherViewModel.currentWeatherState.collect {
                 when (it) {
-                    WeatherServiceResponse.Failure -> showRetrySnackBar()
-                    WeatherServiceResponse.Loading -> binding.progressCircular.visibility = View.VISIBLE
-                    WeatherServiceResponse.NoData -> Toast.makeText(this@MainActivity, "No data", Toast.LENGTH_SHORT).show()
+                    WeatherServiceResponse.Failure -> showSnackBar("Something went wrong") {
+                        weatherViewModel.getWeatherData()
+                    }
+
+                    WeatherServiceResponse.Loading -> binding.progressCircular.visibility =
+                        View.VISIBLE
+
+                    WeatherServiceResponse.NoData -> showSnackBar("No Data") {
+                        weatherViewModel.getWeatherData()
+                    }
+
                     is WeatherServiceResponse.Success -> setWeatherDataOnScreen(it)
                 }
             }
@@ -52,18 +57,17 @@ class MainActivity : AppCompatActivity() {
     private fun setWeatherDataOnScreen(res: WeatherServiceResponse.Success) {
         binding.apply {
             todayLocation.text = weatherViewModel.city
-            currentWeatherData = res.currentWeather?.getCelsius()
+            currentWeatherData = "${res.currentWeather?.getCelsius()} \u2103"
             res.forecastWeather?.get4DayAverage()?.let { forecastAdapter.updateList(it) }
-            progressCircular.visibility = View.GONE
+            binding.progressCircular.visibility = View.GONE
         }
     }
 
-    private fun showRetrySnackBar(){
-        Snackbar.make(binding.root, "Something went wrong", Snackbar.LENGTH_SHORT)
-            .setAction("RETRY"){
-                weatherViewModel.getWeatherData()
-            }
-            .show()
+    private fun showSnackBar(txt: String, fnAction: (() -> Unit)?) {
+        binding.progressCircular.visibility = View.GONE
+        Snackbar.make(binding.root, txt, Snackbar.LENGTH_INDEFINITE).setAction("RETRY") {
+            fnAction?.invoke()
+        }.show()
     }
 
 }

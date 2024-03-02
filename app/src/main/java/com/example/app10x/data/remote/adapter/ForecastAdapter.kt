@@ -8,15 +8,18 @@ import com.example.app10x.data.remote.model.ForecastPair
 import com.example.app10x.databinding.ForecastCardBinding
 import javax.inject.Inject
 
-class ForecastAdapter @Inject constructor(): RecyclerView.Adapter<ForecastAdapter.ViewHolder>() {
+class ForecastAdapter @Inject constructor() : RecyclerView.Adapter<ForecastAdapter.ViewHolder>() {
 
     private var list = listOf<ForecastPair>()
     override fun getItemCount() = list.size
     inner class ViewHolder(val binding: ForecastCardBinding) : RecyclerView.ViewHolder(binding.root)
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        with(holder.binding){
-            degreeTextView.text = list[position].temp?.convertKelvinToCelsiusString()
-            dayTextView.text = list[position].date?.dayOfWeek?.name
+        with(holder.binding) {
+            list[position].let { v ->
+                degreeTextView.text = "${v.temp?.convertKelvinToCelsiusString()}  C"
+                dayTextView.text = v.date?.dayOfWeek?.name
+            }
         }
     }
 
@@ -30,7 +33,7 @@ class ForecastAdapter @Inject constructor(): RecyclerView.Adapter<ForecastAdapte
         )
     }
 
-    fun updateList(l: List<ForecastPair>){
+    fun updateList(l: List<ForecastPair>) {
         list = l
         notifyDataSetChanged()
     }

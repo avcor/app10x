@@ -13,13 +13,6 @@ import javax.inject.Inject
 class WeatherRepo @Inject constructor(
     private val apiWeatherService: ApiWeatherService
 ) {
-    val TAG = "abcd"
-
-    private val coroutineExceptionHandler =
-        CoroutineExceptionHandler { coroutineContext, throwable ->
-            Log.e(TAG, "Exception in Weather Repo $throwable")
-        }
-
     suspend fun getCurrentWeather(city: String = "Bengaluru") = flow {
         try {
             val weatherResponse = apiWeatherService.getCurrentWeather(cityName = city)
@@ -38,10 +31,10 @@ class WeatherRepo @Inject constructor(
                 emit(WeatherServiceResponse.NoData)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "getCurrentWeather: exception $e")
+            Log.e("WeatherRepo", "getCurrentWeather: exception $e")
             emit(WeatherServiceResponse.Failure)
         }
-    }.flowOn(Dispatchers.IO + coroutineExceptionHandler)
+    }.flowOn(Dispatchers.IO)
 
 }
 

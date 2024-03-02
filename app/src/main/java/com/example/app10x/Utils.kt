@@ -1,12 +1,12 @@
 package com.example.app10x
 
 import android.util.Log
-import com.example.app10x.ui.mainactivity.TAG
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+val TAG = "utils"
 fun Double.convertKelvinToCelsiusString(): String {
     return (this - 273.15).toString().substring(0, 4)
 }

@@ -1,10 +1,8 @@
 package com.example.app10x.data.remote.model
 
-import android.util.Log
 import com.example.app10x.dayToDateObj
 import com.example.app10x.militaryToDate
-import com.example.app10x.militaryToDateTime
-import com.example.app10x.ui.mainactivity.TAG
+import java.time.LocalDate
 
 data class WeatherForecastModel(
     val cod: String,
@@ -28,11 +26,14 @@ data class WeatherForecastModel(
                 hash[key] = Pair(l.main.temp, 1)
             }
         }
-        Log.d(TAG, "get4DayAverage: " + hash)
 
+        var len = 0
         for(h in hash){
-            val v = ForecastPair(h.key.dayToDateObj(), (h.value.first/h.value.second))
-            res.add(v)
+            if(h.key.dayToDateObj()?.dayOfMonth != LocalDate.now().dayOfMonth && len<4){
+                val v = ForecastPair(h.key.dayToDateObj(), (h.value.first/h.value.second))
+                res.add(v)
+                len++
+            }
         }
         return res
     }
